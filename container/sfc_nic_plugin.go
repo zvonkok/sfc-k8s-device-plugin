@@ -19,11 +19,10 @@ import (
 	pluginapi "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1beta1"
 )
 
-//const (
+
 var socketName string   //= "sfcNIC"
 var resourceName string //= "solarflare.com/sfc"
 
-//)
 // sfcNICManager manages Solarflare NIC devices
 type sfcNICManager struct {
 	devices     map[string]*pluginapi.Device
@@ -82,15 +81,13 @@ func (sfc *sfcNICManager) discoverSolarflareResources() bool {
 	glog.Info("discoverSolarflareResources")
 
 
-	out, err := ExecCommand("sfupdate", "--list")
+	out, err := ExecCommand("/usr/bin/list_sfc_devices.sh")
 	if err != nil {
 		glog.Errorf("error while listing sfc devices : %v %s", err, out)
 		return found
 	}
 
 	sfc_dev := strings.Split(out.String(), "\n")
-
-	sfc_dev = sfc_dev[2:] // remove comment
 
 	fmt.Printf("len=%d cap=%d %v\n", len(sfc_dev), cap(sfc_dev), sfc_dev)	
 
@@ -108,28 +105,43 @@ func (sfc *sfcNICManager) discoverSolarflareResources() bool {
 }
 
 func (sfc *sfcNICManager) isOnloadInstallHealthy() bool {
-	healthy := true
-	// If the following command executes without ERROR,Failed we have 
+
+	// If the following command executes without ERROR|Failed we have 
 	// a valid onload installation no need to check for libonload
-/*
-	out, _ := ExecCommand("onload", "/usr/bin/ping", "-c1", "localhost")
-	fmt.Printf("Onload: %s", out.String());
+
+	out, _ := ExecCommand("onload", "--version")
+
 	if strings.Contains(out.String(), "ERROR") {
 		fmt.Errorf("onload error, looks like libonload is missing %s", out)
 		return false
 	}
+
         if strings.Contains(out.String(), "Failed") {
                 fmt.Errorf("onload error, looks like devices are missing %s", out)
                 return false
         } 
-	if strings.Contains(out.String(), "1 received") {
-		healthy = true
-	} else {
-		fmt.Errorf("onload error, did not receive a packet %s", out)
+
+	onload_versions := strings.Split(out.String(), "\n")
+	
+	// The strings.Split gives an extra empty slice 
+ 	// because  of the last \n 
+	l := len(onload_versions) - 2 
+
+	onload_user_version_slice := strings.Split(onload_versions[0], " ")
+	onload_kern_version_slice := strings.Split(onload_versions[l], " ")
+
+	onload_user_version := onload_user_version_slice[len(onload_user_version_slice) - 1]
+	onload_kern_version := onload_kern_version_slice[len(onload_kern_version_slice) - 1]
+
+	fmt.Printf("onload user version: %s\n", onload_user_version)
+	fmt.Printf("onload kern version: %s\n", onload_kern_version)	
+
+	if (onload_user_version != onload_kern_version) {
+		fmt.Errorf("onload error, kernel (%s) <-> user space (%s) versions mismatch, check your installation", onload_user_version, onload_kern_version)
+                return false
 	}
-	return healthy
-*/
-        return healthy
+
+	return true
 }
 
 

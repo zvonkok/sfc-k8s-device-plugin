@@ -10,20 +10,27 @@ spec:
         name: sfc-device-plugin-ds
     spec:
       priorityClassName: system-node-critical
-      serviceAccount: sfc-deviceplugin
-      serivceAccountName: sfc-deviceplugin
+
+      serviceAccount: sfc-device-plugin
+      serivceAccountName: sfc-device-plugin
+
       hostNetwork: true
+
       nodeSelector:
         beta.kubernetes.io/arch: amd64
       tolerations:
       - key: node-role.kubernetes.io/master
         operator: Exists
         effect: NoSchedule
+
       containers:
       - image: quay.io/zvonkok/sfc-dev-plugin
         name: sfc-device-plugin-ctr
+
         securityContext:
-          privileged: true
+          allowPrivilegeEscalation: false
+          capabilities:
+            drop: ["ALL"]
         volumeMounts:
           - mountPath: "/var/lib/kubelet/device-plugins"
             name: device-plugin

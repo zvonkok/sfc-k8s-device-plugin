@@ -1,0 +1,34 @@
+allowHostDirVolumePlugin: true
+allowHostIPC: false
+allowHostNetwork: true
+allowHostPID: false
+allowHostPorts: false
+allowPrivilegedContainer: false
+allowedCapabilities: null
+apiVersion: security.openshift.io/v1
+defaultAddCapabilities: null
+fsGroup:
+  type: MustRunAs
+groups: []
+kind: SecurityContextConstraints
+metadata:
+  annotations:
+    kubernetes.io/description: sfc-device-plugin allows the Solarflare  DevicePlugin
+      to discover sfc nics and exposes them to the nodes. 
+  creationTimestamp: 2018-06-07T16:30:34Z
+  name: sfc-device-plugin
+  resourceVersion: "102533"
+priority: null
+readOnlyRootFilesystem: true
+requiredDropCapabilities:
+- ALL
+runAsUser:
+  type: RunAsAny
+seLinuxContext:
+  type: MustRunAs
+supplementalGroups:
+  type: MustRunAs
+users:
+- system:serviceaccount:solarflare:sfc-device-plugin
+volumes:
+
