@@ -82,7 +82,7 @@ func (sfc *sfcNICManager) discoverSolarflareResources() bool {
 	glog.Info("discoverSolarflareResources")
 
 
-	out, err := ExecCommand("sfupdate", "--list")
+	out, err := ExecCommand("/usr/bin/list_sfc_devices.sh")
 	if err != nil {
 		glog.Errorf("error while listing sfc devices : %v %s", err, out)
 		return found
