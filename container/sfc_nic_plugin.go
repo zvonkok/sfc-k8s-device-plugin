@@ -16,7 +16,7 @@ import (
 	"golang.org/x/net/context"
 	"google.golang.org/grpc"
 
-	pluginapi "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1beta1"
+	pluginapi "k8s.io/kubernetes/pkg/kubelet/apis/deviceplugin/v1alpha"
 )
 
 //const (
@@ -52,13 +52,13 @@ func NewSFCNICManager() (*sfcNICManager, error) {
 	}, nil
 }
 
-func (m *sfcNICManager) GetDevicePluginOptions(context.Context, *pluginapi.Empty) (*pluginapi.DevicePluginOptions, error) {
-	return &pluginapi.DevicePluginOptions{}, nil
-}
+// v1.10 func (m *sfcNICManager) GetDevicePluginOptions(context.Context, *pluginapi.Empty) (*pluginapi.DevicePluginOptions, error) {
+// v1.10	return &pluginapi.DevicePluginOptions{}, nil
+// v1.10 }
 
-func (m *sfcNICManager) PreStartContainer(context.Context, *pluginapi.PreStartContainerRequest) (*pluginapi.PreStartContainerResponse, error) {
-	return &pluginapi.PreStartContainerResponse{}, nil
-}
+// v1.10 func (m *sfcNICManager) PreStartContainer(context.Context, *pluginapi.PreStartContainerRequest) (*pluginapi.PreStartContainerResponse, error) {
+// v1.10 	return &pluginapi.PreStartContainerResponse{}, nil
+// v1.10 }
 
 
 func ExecCommand(cmdName string, arg ...string) (bytes.Buffer, error) {
@@ -186,34 +186,26 @@ func (sfc *sfcNICManager) ListAndWatch(emtpy *pluginapi.Empty, stream pluginapi.
 	return nil
 }
 
-func (sfc *sfcNICManager) Allocate(ctx context.Context, rqts *pluginapi.AllocateRequest) (*pluginapi.AllocateResponse, error) {
-	glog.Info("Allocate")
-	responses := pluginapi.AllocateResponse{}
-	
-	for _, rqt := range rqts.ContainerRequests {
-		resp := pluginapi.ContainerAllocateResponse{
-			Envs: map[string]string{
-				"SOLARFLARE_VISIBLE_DEVICES": strings.Join(rqt.DevicesIDs, ","),
-			},
-		}
-
-		for _, id := range rqt.DevicesIDs {
-			if _, ok := sfc.devices[id]; ok {
-/*				for _, d := range sfc.deviceFiles {
-					resp.Devices = append(resp.Devices, &pluginapi.DeviceSpec{
-						HostPath:      d,
-						ContainerPath: d,
-						Permissions:   "mrw",
-					})
-				}
+func (sfc *sfcNICManager) Allocate(ctx context.Context, rqt *pluginapi.AllocateRequest) (*pluginapi.AllocateResponse, error) {
+        glog.Info("Allocate")
+        resp := new(pluginapi.AllocateResponse)
+        //      containerName := strings.Join([]string{"k8s", "POD", rqt.PodName, rqt.Namespace}, "_")
+        for _, id := range rqt.DevicesIDs {
+                if _, ok := sfc.devices[id]; ok {
+/*                        for _, d := range sfc.deviceFiles {
+                                resp.Devices = append(resp.Devices, &pluginapi.DeviceSpec{
+                                        HostPath:      d,
+                                        ContainerPath: d,
+                                        Permissions:   "mrw",
+                                })
+                        }
 */
-				glog.Info("Allocated interface ", id)
-			}
-		}
-
-		responses.ContainerResponses = append(responses.ContainerResponses, &resp)
-	}
-	return &responses, nil
+                        glog.Info("Allocated interface ", id)
+                        //glog.Info("Allocate interface ", id, " to ", containerName)
+ //                       go MoveInterface(id)
+                }
+        }
+        return resp, nil
 }
 
 
