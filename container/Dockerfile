@@ -17,7 +17,7 @@ WORKDIR /gopath/src/sfc-dev-plugin
 COPY . .
 RUN go build -o sfc-nic-plugin
 RUN cp sfc-nic-plugin /usr/bin/sfc-nic-plugin 
-
+RUN cp list_sfc_devices.sh /usr/bin/list_sfc_devices.sh
 
 
 CMD ["sfc-nic-plugin", "-logtostderr=true"]
